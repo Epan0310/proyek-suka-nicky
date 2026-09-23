@@ -21,9 +21,15 @@ import {
   LogOut,
 } from "lucide-react";
 
+type CategoryType =
+  | "Keripik"
+  | "Olahan Ikan"
+  | "Dodol & Buah"
+  | "Kuliner Lokal";
+
 interface FormDataState {
   name: string;
-  category: Product["category"];
+  category: CategoryType;
   price: number;
   weight: string;
   description: string;
@@ -38,9 +44,7 @@ export default function AdminDashboard() {
 
   const ADMIN_PIN = "1996";
 
-  // Cast context ke 'any' agar TypeScript tidak komplain jika Context interface di ProductContext belum didefinisikan lengkap
-  const { products, addProduct, updateProduct, deleteProduct } =
-    useProducts() as any;
+  const { products, addProduct, updateProduct, deleteProduct } = useProducts();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,7 +68,7 @@ export default function AdminDashboard() {
 
   const [formData, setFormData] = useState<FormDataState>({
     name: "",
-    category: "Keripik" as Product["category"],
+    category: "Keripik",
     price: 0,
     weight: "",
     description: "",
@@ -94,7 +98,7 @@ export default function AdminDashboard() {
       setEditingProduct(product);
       setFormData({
         name: product.name,
-        category: product.category,
+        category: product.category as CategoryType,
         price: product.price,
         weight: product.weight || "",
         description: product.description || "",
@@ -105,7 +109,7 @@ export default function AdminDashboard() {
       setEditingProduct(null);
       setFormData({
         name: "",
-        category: "Keripik" as Product["category"],
+        category: "Keripik",
         price: 0,
         weight: "200 gram",
         description: "",
@@ -119,26 +123,28 @@ export default function AdminDashboard() {
 
   const handleSaveProduct = (e: React.FormEvent) => {
     e.preventDefault();
+    const productPayload: Product = {
+      id: editingProduct ? editingProduct.id : `sn-${Date.now()}`,
+      name: formData.name,
+      category: formData.category as CategoryType,
+      price: Number(formData.price),
+      weight: formData.weight,
+      description: formData.description,
+      image: formData.image,
+      ingredients: formData.ingredients,
+    };
+
     if (editingProduct) {
-      updateProduct?.({
-        ...editingProduct,
-        ...formData,
-        price: Number(formData.price),
-      });
+      updateProduct(productPayload);
     } else {
-      const newProduct: Product = {
-        id: `sn-${Date.now()}`,
-        ...formData,
-        price: Number(formData.price),
-      };
-      addProduct?.(newProduct);
+      addProduct(productPayload);
     }
     setIsModalOpen(false);
   };
 
   const handleDeleteProduct = (id: string) => {
     if (confirm("Apakah kamu yakin ingin menghapus produk ini?")) {
-      deleteProduct?.(id);
+      deleteProduct(id);
     }
   };
 
@@ -461,7 +467,7 @@ export default function AdminDashboard() {
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        category: e.target.value as Product["category"],
+                        category: e.target.value as CategoryType,
                       })
                     }
                     className="w-full px-3.5 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-700"
