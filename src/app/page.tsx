@@ -19,14 +19,70 @@ import {
   Heart,
   PackageSearch,
   RotateCcw,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
+
+// Data slide hero memanggil gambar dari folder public/images/
+const HERO_SLIDES = [
+  {
+    id: 1,
+    title: "Keripik Tempe Mocaf Premium",
+    price: 18000,
+    badge: "Best Seller #1",
+    description:
+      "Dibuat dari tepung singkong mocaf pilihan. Tekstur jauh lebih renyah, gurih, dan aman untuk pencernaan.",
+    award: "Pemenang Penghargaan Pangan Nusa Kategori Camilan",
+    image: "/images/keripik-tempe.jpeg", // ganti ekstensi jika gambarmu .png
+  },
+  {
+    id: 2,
+    title: "Abon Ikan Segar Banjarnegara",
+    price: 25000,
+    badge: "Tersedia di Indomaret",
+    description:
+      "Abon ikan kaya protein tanpa bahan pengawet. Diproses higienis dengan resep tradisional keluarga.",
+    award: "Mitra Resmi Olahan Ikan Ritel Modern",
+    image: "/images/abon-ikan-segar.jpeg", // ganti ekstensi jika gambarmu .png
+  },
+  {
+    id: 3,
+    title: "Manisan Carica Dieng Segar",
+    price: 22000,
+    badge: "Khas Banjarnegara",
+    description:
+      "Buah Carica segar dari dataran tinggi Dieng dipadukan sirup gula murni yang menyegarkan.",
+    award: "Oleh-Oleh Khas Favorit Wisatawan",
+    image: "/images/manisan-carica-dieng.jpeg", // ganti ekstensi jika gambarmu .png
+  },
+];
 
 export default function Home() {
   const { addToCart, setIsCartOpen } = useCart();
-  const { products } = useProducts(); // <-- Membaca data produk langsung dari ProductContext
+  const { products } = useProducts();
   const [selectedCategory, setSelectedCategory] = useState<string>("Semua");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [activeProduct, setActiveProduct] = useState<Product | null>(null);
+
+  // State & Efek Auto Slide Hero
+  const [currentSlide, setCurrentSlide] = useState<number>(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide(
+      (prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length,
+    );
+  };
 
   const categories = [
     "Semua",
@@ -36,7 +92,6 @@ export default function Home() {
     "Kuliner Lokal",
   ];
 
-  // Helper pemformatan mata uang Rupiah
   const formatRupiah = (amount: number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -45,7 +100,6 @@ export default function Home() {
     }).format(amount);
   };
 
-  // Efek aksesibilitas modal (Tombol ESC & Lock Scroll)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") setActiveProduct(null);
@@ -62,7 +116,6 @@ export default function Home() {
     };
   }, [activeProduct]);
 
-  // Filtering produk berdasarkan state 'products' dinamis
   const filteredProducts = products.filter((product) => {
     const matchesCategory =
       selectedCategory === "Semua" || product.category === selectedCategory;
@@ -74,12 +127,12 @@ export default function Home() {
 
   const handleResetFilter = () => {
     setSelectedCategory("Semua");
-    setSearchQuery("");
+    searchQuery && setSearchQuery("");
   };
 
   return (
     <div className="bg-[#FAF8F5] min-h-screen text-stone-800 antialiased selection:bg-amber-200">
-      {/* 1. HERO SECTION */}
+      {/* 1. HERO SECTION (DENGAN AUTO SLIDER) */}
       <section className="relative overflow-hidden pt-8 pb-16 md:pt-16 md:pb-24 border-b border-stone-200/60 bg-gradient-to-b from-amber-50/80 via-[#FAF8F5] to-[#FAF8F5]">
         <div className="max-w-6xl mx-auto px-4 grid md:grid-cols-12 gap-12 items-center">
           <div className="md:col-span-7 space-y-6 text-center md:text-left">
@@ -117,7 +170,6 @@ export default function Home() {
               </a>
             </div>
 
-            {/* Micro Social Proof */}
             <div className="pt-4 flex items-center justify-center md:justify-start gap-6 border-t border-stone-200/80">
               <div>
                 <p className="text-lg font-black text-stone-900">28+ Tahun</p>
@@ -142,39 +194,74 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Hero Banner / Highlight Box */}
+          {/* Hero Banner / Highlight Box dengan Auto Slider */}
           <div className="md:col-span-5 relative">
             <div className="absolute -inset-2 bg-amber-200/50 rounded-3xl blur-xl -z-10"></div>
-            <div className="bg-white border border-stone-200/80 rounded-3xl p-6 shadow-xl space-y-5">
-              <div className="relative h-56 rounded-2xl overflow-hidden bg-stone-100">
+            <div className="bg-white border border-stone-200/80 rounded-3xl p-6 shadow-xl space-y-5 relative">
+              {/* Gambar Slider dengan Tombol Navigasi */}
+              <div className="relative h-56 rounded-2xl overflow-hidden bg-stone-100 group">
                 <img
-                  src="https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?auto=format&fit=crop&w=800&q=80"
-                  alt="Keripik Tempe Suka Nicky"
-                  className="w-full h-full object-cover"
+                  src={HERO_SLIDES[currentSlide].image}
+                  alt={HERO_SLIDES[currentSlide].title}
+                  className="w-full h-full object-cover transition-all duration-700 ease-in-out"
                 />
+
                 <span className="absolute top-3 right-3 bg-emerald-800 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow">
-                  Best Seller #1
+                  {HERO_SLIDES[currentSlide].badge}
                 </span>
+
+                {/* Tombol Panah Slider */}
+                <button
+                  onClick={prevSlide}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-stone-900/40 hover:bg-stone-900/70 text-white p-1.5 rounded-full backdrop-blur-sm transition opacity-0 group-hover:opacity-100"
+                  aria-label="Previous Slide"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={nextSlide}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-stone-900/40 hover:bg-stone-900/70 text-white p-1.5 rounded-full backdrop-blur-sm transition opacity-0 group-hover:opacity-100"
+                  aria-label="Next Slide"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+
+                {/* Dots Indikator */}
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                  {HERO_SLIDES.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentSlide(idx)}
+                      className={`h-1.5 rounded-full transition-all ${
+                        idx === currentSlide
+                          ? "w-5 bg-amber-500"
+                          : "w-1.5 bg-white/60 hover:bg-white"
+                      }`}
+                      aria-label={`Slide ${idx + 1}`}
+                    />
+                  ))}
+                </div>
               </div>
 
               <div>
-                <div className="flex items-center justify-between">
-                  <h3 className="font-extrabold text-stone-900 text-base">
-                    Keripik Tempe Mocaf Premium
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="font-extrabold text-stone-900 text-base line-clamp-1">
+                    {HERO_SLIDES[currentSlide].title}
                   </h3>
-                  <span className="text-xs font-black text-amber-900 bg-amber-100 px-2.5 py-1 rounded-lg">
-                    {formatRupiah(18000)}
+                  <span className="text-xs font-black text-amber-900 bg-amber-100 px-2.5 py-1 rounded-lg shrink-0">
+                    {formatRupiah(HERO_SLIDES[currentSlide].price)}
                   </span>
                 </div>
-                <p className="text-xs text-stone-500 mt-1">
-                  Dibuat dari tepung singkong mocaf pilihan. Tekstur jauh lebih
-                  renyah, gurih, dan aman untuk pencernaan.
+                <p className="text-xs text-stone-500 mt-1 min-h-[36px]">
+                  {HERO_SLIDES[currentSlide].description}
                 </p>
               </div>
 
               <div className="bg-amber-50/60 p-3 rounded-xl border border-amber-200/50 text-[11px] text-amber-900 flex items-center gap-2">
                 <Award className="w-4 h-4 text-amber-700 shrink-0" />
-                <span>Pemenang Penghargaan Pangan Nusa Kategori Camilan</span>
+                <span className="line-clamp-1">
+                  {HERO_SLIDES[currentSlide].award}
+                </span>
               </div>
             </div>
           </div>
@@ -255,7 +342,6 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Search Box */}
           <div className="relative w-full md:w-80">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
             <input
@@ -268,7 +354,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Category Pills */}
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
           {categories.map((cat) => (
             <button
@@ -285,7 +370,6 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Product Cards Grid */}
         {filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {filteredProducts.map((product) => (
