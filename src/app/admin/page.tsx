@@ -142,7 +142,9 @@ export default function AdminDashboard() {
     setIsModalOpen(false);
   };
 
-  const handleDeleteProduct = (id: string) => {
+  // Menerima tipe id string maupun number agar tidak bermasalah
+  const handleDeleteProduct = (id: string | number) => {
+    if (id === undefined || id === null) return;
     if (confirm("Apakah kamu yakin ingin menghapus produk ini?")) {
       deleteProduct(id);
     }

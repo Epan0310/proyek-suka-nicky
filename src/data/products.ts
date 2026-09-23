@@ -1,7 +1,13 @@
+export type CategoryType =
+  | "Keripik"
+  | "Dodol & Buah"
+  | "Olahan Ikan"
+  | "Kuliner Lokal";
+
 export interface Product {
   id: string;
   name: string;
-  category: "Keripik" | "Dodol & Buah" | "Olahan Ikan" | "Kuliner Lokal";
+  category: CategoryType;
   price: number;
   weight: string;
   image: string;
