@@ -1,9 +1,9 @@
-const nextConfig = {
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
   typescript: {
+    // Memaksa Vercel tetap sukses deploy meskipun ada warning/error TypeScript
     ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
   },
 };
 

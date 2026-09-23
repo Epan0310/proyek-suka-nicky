@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState } from "react";
 import { Product, PRODUCTS_DATA } from "@/data/products";
 
-interface ProductContextType {
+export interface ProductContextType {
   products: Product[];
   addProduct: (product: Product) => void;
   updateProduct: (product: Product) => void;
@@ -13,7 +13,7 @@ interface ProductContextType {
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
 export function ProductProvider({ children }: { children: React.ReactNode }) {
-  const [products, setProducts] = useState<Product[]>(PRODUCTS_DATA);
+  const [products, setProducts] = useState<Product[]>(PRODUCTS_DATA || []);
 
   const addProduct = (newProduct: Product) => {
     setProducts((prev) => [newProduct, ...prev]);
