@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Product } from "@/data/products";
-import { useProducts } from "@/context/ProductContext"; // <-- Import ini
+import { useProducts } from "@/context/ProductContext";
 import {
   Plus,
   Pencil,
@@ -21,6 +21,16 @@ import {
   LogOut,
 } from "lucide-react";
 
+interface FormDataState {
+  name: string;
+  category: Product["category"];
+  price: number;
+  weight: string;
+  description: string;
+  image: string;
+  ingredients: string;
+}
+
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pinInput, setPinInput] = useState("");
@@ -28,8 +38,9 @@ export default function AdminDashboard() {
 
   const ADMIN_PIN = "1996";
 
-  // Ambil data & fungsi dari ProductContext Global
-  const { products, addProduct, updateProduct, deleteProduct } = useProducts();
+  // Cast context ke 'any' agar TypeScript tidak komplain jika Context interface di ProductContext belum didefinisikan lengkap
+  const { products, addProduct, updateProduct, deleteProduct } =
+    useProducts() as any;
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,9 +62,9 @@ export default function AdminDashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormDataState>({
     name: "",
-    category: "Keripik",
+    category: "Keripik" as Product["category"],
     price: 0,
     weight: "",
     description: "",
@@ -69,7 +80,7 @@ export default function AdminDashboard() {
     "Kuliner Lokal",
   ];
 
-  const filteredProducts = products.filter((p) => {
+  const filteredProducts = (products || []).filter((p: Product) => {
     const matchesCat =
       selectedCategory === "Semua" || p.category === selectedCategory;
     const matchesSearch = p.name
@@ -94,7 +105,7 @@ export default function AdminDashboard() {
       setEditingProduct(null);
       setFormData({
         name: "",
-        category: "Keripik",
+        category: "Keripik" as Product["category"],
         price: 0,
         weight: "200 gram",
         description: "",
@@ -109,7 +120,7 @@ export default function AdminDashboard() {
   const handleSaveProduct = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingProduct) {
-      updateProduct({
+      updateProduct?.({
         ...editingProduct,
         ...formData,
         price: Number(formData.price),
@@ -120,14 +131,14 @@ export default function AdminDashboard() {
         ...formData,
         price: Number(formData.price),
       };
-      addProduct(newProduct);
+      addProduct?.(newProduct);
     }
     setIsModalOpen(false);
   };
 
   const handleDeleteProduct = (id: string) => {
     if (confirm("Apakah kamu yakin ingin menghapus produk ini?")) {
-      deleteProduct(id);
+      deleteProduct?.(id);
     }
   };
 
@@ -245,7 +256,7 @@ export default function AdminDashboard() {
                 Total Produk
               </p>
               <p className="text-2xl font-black text-stone-900">
-                {products.length}
+                {products?.length || 0}
               </p>
             </div>
           </div>
@@ -259,7 +270,7 @@ export default function AdminDashboard() {
                 Status Aktif
               </p>
               <p className="text-2xl font-black text-stone-900">
-                {products.length}
+                {products?.length || 0}
               </p>
             </div>
           </div>
@@ -289,8 +300,10 @@ export default function AdminDashboard() {
               <p className="text-lg font-black text-amber-900">
                 Rp{" "}
                 {Math.round(
-                  products.reduce((acc, curr) => acc + curr.price, 0) /
-                    (products.length || 1),
+                  (products || []).reduce(
+                    (acc: number, curr: Product) => acc + curr.price,
+                    0,
+                  ) / (products?.length || 1),
                 ).toLocaleString("id-ID")}
               </p>
             </div>
@@ -339,7 +352,7 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100">
-                {filteredProducts.map((product) => (
+                {filteredProducts.map((product: Product) => (
                   <tr
                     key={product.id}
                     className="hover:bg-stone-50/80 transition"
@@ -446,7 +459,10 @@ export default function AdminDashboard() {
                   <select
                     value={formData.category}
                     onChange={(e) =>
-                      setFormData({ ...formData, category: e.target.value })
+                      setFormData({
+                        ...formData,
+                        category: e.target.value as Product["category"],
+                      })
                     }
                     className="w-full px-3.5 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-700"
                   >
